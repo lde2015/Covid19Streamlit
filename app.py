@@ -59,7 +59,7 @@ st.markdown(title_evol, unsafe_allow_html=True)
 #---------------------------------------------------------------------------------------------------------------
 
 with st.expander("Evolution des hospitalisations, réanimations, décés"):
-    col1, col2, col3 = st.beta_columns(3)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
     ################################################################################################################
@@ -84,7 +84,7 @@ with st.expander("Evolution des hospitalisations, réanimations, décés"):
 
             Donnée = st.selectbox('Donnée', list(df_type_data['type_data'].values))
             Type = st.selectbox('Type', ['En nombre','En ratio'])
-            submitted1 = st.form_submit_button('Submit')
+            submitted1 = st.form_submit_button('Rafraîchir')
             if submitted1:
                 if Type == 'En nombre':
                     fig, colonne = ut.plot_courbes_regions(df_type_data, Donnée, df_agg_reg, dict_labels, local, 'N')
@@ -115,7 +115,7 @@ with st.expander("Evolution des hospitalisations, réanimations, décés"):
 
             Donnée = st.selectbox('Donnée', list(df_type_data['type_data'].values))
             Type = st.selectbox('Type', ['En nombre','En ratio'])
-            submitted2 = st.form_submit_button('Submit')
+            submitted2 = st.form_submit_button('Rafraîchir')
             if submitted2:
                 if Type == 'En nombre':
                     fig, colonne = ut.plot_courbes_departements_grid(df_type_data, Donnée, df, dict_labels, local, 'N')
@@ -148,7 +148,7 @@ with st.expander("Evolution des hospitalisations, réanimations, décés"):
             Région = st.selectbox('Région', list(np.sort(df['nom_region'].unique())))
             Donnée = st.selectbox('Donnée', list(df_type_data['type_data'].values))
             Type = st.selectbox('Type', ['En nombre','En ratio'])
-            submitted3 = st.form_submit_button('Submit')
+            submitted3 = st.form_submit_button('Rafraîchir')
             if submitted3:
                 if Type == 'En nombre':
                     fig, colonne = ut.plot_courbes_departements(df_type_data, Donnée, df[df.nom_region == Région], Région, dict_labels, local, 'N')
@@ -175,7 +175,7 @@ title_new = """
 st.markdown(title_new, unsafe_allow_html=True)
 
 with st.expander("Evolution des nouveaux cas"):
-    col1, col2 = st.beta_columns(2)
+    col1, col2 = st.columns(2)
 
     with col1:
     ################################################################################################################
@@ -199,7 +199,7 @@ with st.expander("Evolution des nouveaux cas"):
             st.markdown(title_1, unsafe_allow_html=True)
 
             zone = st.selectbox('Zone', ['Tout', 'Hors Paris', 'Paris'])
-            submitted1 = st.form_submit_button('Submit')
+            submitted1 = st.form_submit_button('Rafraîchir')
             if submitted1:
                 fig = ut.plot_heatmap_regions(df_new_agg_reg, local, zone, 'N')
                 st.plotly_chart(fig, use_container_width=True)
@@ -227,7 +227,7 @@ with st.expander("Evolution des nouveaux cas"):
             st.markdown(title_2, unsafe_allow_html=True)
 
             Région = st.selectbox('Région', list(np.sort(df['nom_region'].unique())))
-            submitted2 = st.form_submit_button('Submit')
+            submitted2 = st.form_submit_button('Rafraîchir')
             if submitted2:
                 fig = ut.plot_heatmap_1region(df_new[df_new.nom_region == Région], Région, local, 'N')
                 st.plotly_chart(fig, use_container_width=True)
@@ -276,7 +276,7 @@ with st.expander("Vue géographique de l'évolution"):
             Zone = st.selectbox('Zone', ['Tout', 'Hors Paris', 'Paris'])
             Type = st.selectbox('Type', ['En nombre','En ratio'])
 
-            submitted1 = st.form_submit_button('Submit')
+            submitted1 = st.form_submit_button('Rafraîchir')
             if submitted1:
                 if Type == 'En nombre':
                     fig, colonne = ut.plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, geo, local, 'N')
