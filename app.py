@@ -58,7 +58,7 @@ st.markdown(title_evol, unsafe_allow_html=True)
 
 #---------------------------------------------------------------------------------------------------------------
 
-with st.beta_expander("Evolution des hospitalisations, réanimations, décés"):
+with st.expander("Evolution des hospitalisations, réanimations, décés"):
     col1, col2, col3 = st.beta_columns(3)
 
     with col1:
@@ -174,7 +174,7 @@ title_new = """
                 """
 st.markdown(title_new, unsafe_allow_html=True)
 
-with st.beta_expander("Evolution des nouveaux cas"):
+with st.expander("Evolution des nouveaux cas"):
     col1, col2 = st.beta_columns(2)
 
     with col1:
@@ -251,7 +251,7 @@ title_geo = """
                 """
 st.markdown(title_new, unsafe_allow_html=True)
 
-with st.beta_expander("Vue géographique de l'évolution"):
+with st.expander("Vue géographique de l'évolution"):
     ################################################################################################################
     # Vue géographique
     ################################################################################################################
