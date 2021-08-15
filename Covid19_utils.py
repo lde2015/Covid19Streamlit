@@ -91,7 +91,7 @@ def charge_data(date_deb, df_dept, df_pop_dept, df_type_data, ratio=10000):
     df.drop(columns=['dep','sexe','dept'], axis=1, inplace=True)
     df['infos'] = df['code_departement'] + " " + df['nom_departement'] + " (" + df['nom_region'] + ")"
     df['legend'] = df['nom_region'] + " - " + df['nom_departement']
-    
+    print("*************** ligne 94")
     df.dropna(inplace=True)
     df['hosp_ratio'] = df.apply(lambda x: np.round(x['hosp']*ratio/x['population'], 2), axis=1)
     df['rea_ratio'] = df.apply(lambda x: np.round(x['rea']*ratio/x['population'], 2), axis=1)
