@@ -1,8 +1,9 @@
 # Import des librairies
-from ipywidgets import interact, interact_manual
 import Covid19_utils as ut
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 
 @st.cache(show_spinner=False)
@@ -11,18 +12,21 @@ def get_metadata(local, nb_jours):
     return df_type_data, df_new, df_new_agg_reg, dict_labels, geo, df_dept, df_pop_dept
 
 @st.cache(show_spinner=False)
-def get_data(dte_deb, df_dept, df_pop_dept):
+def get_data(dte_deb, df_dept, df_pop_dept, df_type_data):
     date_deb = dte_deb.strftime('%d/%m/%Y')
-    df_agg_reg, df, df_hors_paris, df_paris = ut.charge_data(date_deb, df_dept, df_pop_dept)
-    return df_agg_reg, df, df_hors_paris, df_paris
+    df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat = ut.charge_data(date_deb, df_dept, df_pop_dept, df_type_data)
+    return df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat
 
 
 #############################################################################################################
 
 st.set_page_config(page_title="Covid19", page_icon=None, layout='wide', initial_sidebar_state='auto')
 
-st.image('img_titre.jpg')
-#st.markdown("<h1 style='text-align: center; color: black;'>Dashboard Evolution Covid19 en France</h1><br> </br>", unsafe_allow_html=True)
+col1, col2 = st.columns([1,4])
+with col1:
+    st.image('sars-cov-19.jpg')
+with col2:
+    st.markdown("<h1 style='text-align: center; color: rgb(93,105,177);'>Dashboard Evolution Covid19 en France</h1><br> </br>", unsafe_allow_html=True)
 
 
 # Chargement des données
@@ -31,7 +35,7 @@ df_type_data, df_new, df_new_agg_reg, dict_labels, geo, df_dept, df_pop_dept = g
 
 dte_def = datetime.strptime('20032020', "%d%m%Y")
 dte_deb_sel = st.date_input('Date de début : ', value=dte_def)
-df_agg_reg, df, df_hors_paris, df_paris = get_data(dte_deb_sel, df_dept, df_pop_dept)
+df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat = get_data(dte_deb_sel, df_dept, df_pop_dept, df_type_data)
 
 # Initialisations
 list_data = list(df_type_data['type_data'].values)
@@ -42,12 +46,63 @@ ratio = 100000
 
 #---------------------------------------------------------------------------------------------------------------
 
+j = pd.Timestamp(date.today() - timedelta(days=1))
+j_1 = pd.Timestamp(date.today() - timedelta(days=2))
+
+tot_hosp_j = df_agg_reg[df_agg_reg.date == j]['hosp'].sum()
+tot_rea_j = df_agg_reg[df_agg_reg.date == j]['rea'].sum()
+tot_dc_j = df_agg_reg[df_agg_reg.date == j]['dc'].sum()
+tot_hosp_j_1 = df_agg_reg[df_agg_reg.date == j_1]['hosp'].sum()
+tot_rea_j_1 = df_agg_reg[df_agg_reg.date == j_1]['rea'].sum()
+tot_dc_j_1 = df_agg_reg[df_agg_reg.date == j_1]['dc'].sum()
+evol_hosp = tot_hosp_j - tot_hosp_j_1
+evol_rea = tot_rea_j - tot_rea_j_1
+evol_dc = tot_dc_j - tot_dc_j_1
+
+st.write("Chiffres en date du "+datetime.strftime(j, '%d/%m/%Y')+" (avec delta par rapport à la veille)")
+
+fig = go.Figure()
+
+fig.add_trace(go.Indicator(
+    mode = "number+delta",
+    value = tot_hosp_j,
+    title={'text': 'Personnes hospitalisées'},
+    delta = {'reference': tot_hosp_j_1},
+    domain = {'row': 0, 'column': 0}))
+
+fig.add_trace(go.Indicator(
+    mode = "number+delta",
+    value = tot_rea_j,
+    title={'text': 'Personnes en réanimation'},
+    delta = {'reference': tot_rea_j_1},
+    domain = {'row': 0, 'column': 1}))
+
+fig.add_trace(go.Indicator(
+    mode = "number+delta",
+    value = tot_dc_j,
+    title={'text': 'Personnes décédées'},
+    delta = {'reference': tot_dc_j_1},
+    domain = {'row': 0, 'column': 2}))
+
+fig.update_layout(
+    grid = {'rows': 1, 'columns': 3, 'pattern': "independent"})
+
+fig.update_traces(delta_decreasing_color='green', delta_increasing_color='red',
+                 number_valueformat=",.", delta_valueformat=",.",
+                 title_font_size=17, delta_font_size=17, number_font_size=25)
+
+fig.update_layout(margin=dict({'t':0, 'b':0}))
+
+st.plotly_chart(fig)
+
+#---------------------------------------------------------------------------------------------------------------
+
 title_evol = """
                 <style>
                     .title h2{
                     user-select: none;
                     font-size: 25px;
-                    color:rgb(253,83,0);
+                    color:rgb(228,26,28);
                     }
                 </style>
                 <div class="title">
@@ -72,7 +127,7 @@ with st.expander("Evolution des hospitalisations, réanimations, décés"):
                                 .title h4{
                                 user-select: none;
                                 font-size: 20px;
-                                color:rgb(253,83,0);
+                                color:rgb(228,26,28);
                                 }
                             </style>
 
@@ -103,7 +158,7 @@ with st.expander("Evolution des hospitalisations, réanimations, décés"):
                                 .title h4{
                                 user-select: none;
                                 font-size: 20px;
-                                color:rgb(253,83,0);
+                                color:rgb(228,26,28);
                                 }
                             </style>
 
@@ -135,7 +190,7 @@ with st.expander("Evolution des hospitalisations, réanimations, décés"):
                                 .title h4{
                                 user-select: none;
                                 font-size: 20px;
-                                color:rgb(253,83,0);
+                                color:rgb(228,26,28);
                                 }
                             </style>
 
@@ -160,12 +215,91 @@ with st.expander("Evolution des hospitalisations, réanimations, décés"):
 #---------------------------------------------------------------------------------------------------------------
 
 
+title_age = """
+                <style>
+                    .title h2{
+                    user-select: none;
+                    font-size: 25px;
+                    color:rgb(228,26,28);
+                    }
+                </style>
+                <div class="title">
+                    <h2><b>Evolution par classe d'âge</b></h2>
+                </div>
+                """
+st.markdown(title_age, unsafe_allow_html=True)
+
+with st.expander("Evolution par classe d'âge"):
+    col1, col2 = st.columns(2)
+
+    with col1:
+    ################################################################################################################
+    # Evolution pour un type de donnée
+    ################################################################################################################
+
+        with st.form('FormAge1'):
+            title_1 = """
+                            <style>
+                                .title h4{
+                                user-select: none;
+                                font-size: 20px;
+                                color:rgb(228,26,28);
+                                }
+                            </style>
+
+                            <div class="title">
+                                <h4><b>Pour un type de donnée</b></h4>
+                            </div>
+                            """
+            st.markdown(title_1, unsafe_allow_html=True)
+
+            Donnée = st.selectbox('Donnée', list(df_type_data['type_data'].values))
+            submitted1 = st.form_submit_button('Rafraîchir')
+            if submitted1:
+                fig, colonne = ut.plot_donnee_age(df_type_data, Donnée, df_age_nat, dict_labels, local, 'N')
+                st.plotly_chart(fig, use_container_width=True)
+
+
+    ################################################################################################################
+    # Evolution par classe d'âge pour 1 région 
+    ################################################################################################################
+
+    with col2:
+        with st.form('ForAge25'):
+            title_2 = """
+                            <style>
+                                .title h4{
+                                user-select: none;
+                                font-size: 20px;
+                                color:rgb(228,26,28);
+                                }
+                            </style>
+
+                            <div class="title">
+                                <h4><b>Pour 1 région</b></h4>
+                            </div>
+                            """
+            st.markdown(title_2, unsafe_allow_html=True)
+
+            Région = st.selectbox('Région', list(np.sort(df['nom_region'].unique())))
+            Donnée = st.selectbox('Donnée', list(df_type_data['type_data'].values))
+            submitted2 = st.form_submit_button('Rafraîchir')
+            if submitted2:
+                fig, colonne = ut.plot_age_1region(df_type_data, Donnée, df_age[df_age.nom_region == Région], Région, dict_labels, local, 'N')
+                st.plotly_chart(fig, use_container_width=True)
+
+
+
+
+#---------------------------------------------------------------------------------------------------------------
+
+
 title_new = """
                 <style>
                     .title h2{
                     user-select: none;
                     font-size: 25px;
-                    color:rgb(253,83,0);
+                    color:rgb(228,26,28);
                     }
                 </style>
                 <div class="title">
@@ -188,7 +322,7 @@ with st.expander("Evolution des nouveaux cas"):
                                 .title h4{
                                 user-select: none;
                                 font-size: 20px;
-                                color:rgb(253,83,0);
+                                color:rgb(228,26,28);
                                 }
                             </style>
 
@@ -216,7 +350,7 @@ with st.expander("Evolution des nouveaux cas"):
                                 .title h4{
                                 user-select: none;
                                 font-size: 20px;
-                                color:rgb(253,83,0);
+                                color:rgb(228,26,28);
                                 }
                             </style>
 
@@ -242,14 +376,14 @@ title_geo = """
                     .title h2{
                     user-select: none;
                     font-size: 25px;
-                    color:rgb(253,83,0);
+                    color:rgb(228,26,28);
                     }
                 </style>
                 <div class="title">
                     <h2><b>Vue géographique de l'évolution</b></h2>
                 </div>
                 """
-st.markdown(title_new, unsafe_allow_html=True)
+st.markdown(title_geo, unsafe_allow_html=True)
 
 with st.expander("Vue géographique de l'évolution"):
     ################################################################################################################
@@ -262,7 +396,7 @@ with st.expander("Vue géographique de l'évolution"):
                                 .title h4{
                                 user-select: none;
                                 font-size: 20px;
-                                color:rgb(253,83,0);
+                                color:rgb(228,26,28);
                                 }
                             </style>
 
