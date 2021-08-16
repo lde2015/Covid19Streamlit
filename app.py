@@ -17,6 +17,9 @@ def get_data(dte_deb, df_dept, df_pop_dept, df_type_data):
     df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat = ut.charge_data(date_deb, df_dept, df_pop_dept, df_type_data)
     return df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat
 
+def get_data_indic():
+    j, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc = ut.charge_data_indic()
+    return j, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc
 
 #############################################################################################################
 
@@ -29,37 +32,31 @@ with col2:
     st.markdown("<h1 style='text-align: center; color: rgb(93,105,177);'>Dashboard Evolution Covid19 en France</h1><br> </br>", unsafe_allow_html=True)
 
 
-# Chargement des données
+# Chargement des données méta
 local = "."
 df_type_data, df_new, df_new_agg_reg, dict_labels, geo, df_dept, df_pop_dept = get_metadata(local, 14)
 
-dte_def = datetime.strptime('20032020', "%d%m%Y")
-dte_deb_sel = st.date_input('Date de début : ', value=dte_def)
-df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat = get_data(dte_deb_sel, df_dept, df_pop_dept, df_type_data)
+#---------------------------------------------------------------------------------------------------------------
 
-# Initialisations
-list_data = list(df_type_data['type_data'].values)
-list_regions = np.sort(df['nom_region'].unique())
-now = datetime.now() 
-dte_deb = now - timedelta(days=15)
-ratio = 100000
+# Chargement des données indicateurs
+j, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc = get_data_indic()
 
 #---------------------------------------------------------------------------------------------------------------
 
-j = pd.Timestamp(date.today() - timedelta(days=1))
-j_1 = pd.Timestamp(date.today() - timedelta(days=2))
-
-tot_hosp_j = df_agg_reg[df_agg_reg.date == j]['hosp'].sum()
-tot_rea_j = df_agg_reg[df_agg_reg.date == j]['rea'].sum()
-tot_dc_j = df_agg_reg[df_agg_reg.date == j]['dc'].sum()
-tot_hosp_j_1 = df_agg_reg[df_agg_reg.date == j_1]['hosp'].sum()
-tot_rea_j_1 = df_agg_reg[df_agg_reg.date == j_1]['rea'].sum()
-tot_dc_j_1 = df_agg_reg[df_agg_reg.date == j_1]['dc'].sum()
-evol_hosp = tot_hosp_j - tot_hosp_j_1
-evol_rea = tot_rea_j - tot_rea_j_1
-evol_dc = tot_dc_j - tot_dc_j_1
-
-st.write("Chiffres en date du "+datetime.strftime(j, '%d/%m/%Y')+" (avec delta par rapport à la veille)")
+lib = "Chiffres en date du "+datetime.strftime(j, '%d/%m/%Y')+" (avec delta par rapport à la veille)"
+title_indic = """
+                <style>
+                    .title h2{
+                    user-select: none
+                    font-size: 25px;
+                    color:rgb(228,26,28);
+                    }
+                </style>
+                <div class="title">
+                    <h2><b>"""+lib+"""</b></h2>
+                </div>
+                """
+st.markdown(title_indic, unsafe_allow_html=True)
 
 fig = go.Figure()
 
@@ -83,17 +80,31 @@ fig.add_trace(go.Indicator(
     title={'text': 'Personnes décédées'},
     delta = {'reference': tot_dc_j_1},
     domain = {'row': 0, 'column': 2}))
-
-fig.update_layout(
+    
+fig.update_layout(width=1000, height=170, margin={'l':0},
     grid = {'rows': 1, 'columns': 3, 'pattern': "independent"})
 
 fig.update_traces(delta_decreasing_color='green', delta_increasing_color='red',
                  number_valueformat=",.", delta_valueformat=",.",
-                 title_font_size=17, delta_font_size=17, number_font_size=25)
+                 title_font_size=20, delta_font_size=25, number_font_size=35)
 
-fig.update_layout(margin=dict({'t':0, 'b':0}))
+
 
 st.plotly_chart(fig)
+
+#---------------------------------------------------------------------------------------------------------------
+
+# Chargement des données
+dte_def = datetime.strptime('20032020', "%d%m%Y")
+dte_deb_sel = st.date_input('Date de début : ', value=dte_def)
+df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat = get_data(dte_deb_sel, df_dept, df_pop_dept, df_type_data)
+
+# Initialisations
+list_data = list(df_type_data['type_data'].values)
+list_regions = np.sort(df['nom_region'].unique())
+now = datetime.now() 
+dte_deb = now - timedelta(days=15)
+ratio = 100000
 
 #---------------------------------------------------------------------------------------------------------------
 

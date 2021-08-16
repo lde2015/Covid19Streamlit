@@ -64,6 +64,42 @@ def charge_meta(local, nb_jours, ratio=10000):
     return df_type_data, df_new, df_new_agg_reg, dict_labels, geo, df_dept, df_pop_dept
 
 #----------------------------------------------------------------------------------------------------------------------------
+# Chargement des données indicateurs
+def charge_data_indic():
+    
+    # Les données hospitalières
+    url = "https://www.data.gouv.fr/fr/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7"
+    content = requests.get(url).content
+    df = pd.read_csv(io.StringIO(content.decode('utf-8')), sep=';')
+    df = df[df.sexe == 0] # On ne considère que le niveau global
+
+    df.dropna(inplace=True)
+    #df['test'] = df['jour'].apply(lambda x: np.where(x[:4] == '2020', True, False))
+    #df1 = df[df.test]
+    #df2 = df[~df.test]
+    #df1['date'] = pd.to_datetime(df1['jour'], format='%Y-%m-%d')
+    #df2['date'] = pd.to_datetime(df2['jour'], format='%d/%m/%Y')
+    #df = pd.concat([df1, df2]).sort_index()
+
+    df['date'] = pd.to_datetime(df['jour'], format='%Y-%m-%d')
+    max_dte = df['date'].max()
+
+    j = pd.Timestamp(date.today() - timedelta(days=1))
+    j_1 = pd.Timestamp(date.today() - timedelta(days=2))
+
+    tot_hosp_j = df[df.date == j]['hosp'].sum()
+    tot_rea_j = df[df.date == j]['rea'].sum()
+    tot_dc_j = df[df.date == j]['dc'].sum()
+    tot_hosp_j_1 = df[df.date == j_1]['hosp'].sum()
+    tot_rea_j_1 = df[df.date == j_1]['rea'].sum()
+    tot_dc_j_1 = df[df.date == j_1]['dc'].sum()
+    evol_hosp = tot_hosp_j - tot_hosp_j_1
+    evol_rea = tot_rea_j - tot_rea_j_1
+    evol_dc = tot_dc_j - tot_dc_j_1
+
+    return max_dte, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc
+
+#----------------------------------------------------------------------------------------------------------------------------
 # Chargement des données
 def charge_data(date_deb, df_dept, df_pop_dept, df_type_data, ratio=10000):
     dte_deb = pd.to_datetime(date_deb, format='%d/%m/%Y')
@@ -91,7 +127,7 @@ def charge_data(date_deb, df_dept, df_pop_dept, df_type_data, ratio=10000):
     df.drop(columns=['dep','sexe','dept'], axis=1, inplace=True)
     df['infos'] = df['code_departement'] + " " + df['nom_departement'] + " (" + df['nom_region'] + ")"
     df['legend'] = df['nom_region'] + " - " + df['nom_departement']
-    print("*************** ligne 94")
+    
     df.dropna(inplace=True)
     df['hosp_ratio'] = df.apply(lambda x: np.round(x['hosp']*ratio/x['population'], 2), axis=1)
     df['rea_ratio'] = df.apply(lambda x: np.round(x['rea']*ratio/x['population'], 2), axis=1)
