@@ -100,6 +100,15 @@ def charge_data_indic():
     return max_dte, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc
 
 #----------------------------------------------------------------------------------------------------------------------------
+# Chargement des données sur la couverture vaccinale
+def charge_data_vaccin():
+    url = "https://www.data.gouv.fr/fr/datasets/r/7969c06d-848e-40cf-9c3c-21b5bd5a874b"
+    content = requests.get(url).content
+    df = pd.read_csv(io.StringIO(content.decode('utf-8')), sep=';')
+    df.rename(columns={'dep' : 'code_departement'}, inplace=True)
+    return df
+
+#----------------------------------------------------------------------------------------------------------------------------
 # Chargement des données
 def charge_data(date_deb, df_dept, df_pop_dept, df_type_data, ratio=10000):
     dte_deb = pd.to_datetime(date_deb, format='%d/%m/%Y')
@@ -527,6 +536,7 @@ def plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, ge
                         color=colonne,
                         animation_frame="jour",
                         hover_name="infos",
+                        hover_data={'code_departement':False},
                         color_continuous_scale=px.colors.sequential.RdBu_r,
                         range_color=[min, max],
                         labels={'hosp':'Nb personnes', 'rea':'Nb personnes', 'rad':'Nb personnes',
@@ -534,7 +544,7 @@ def plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, ge
                        )
 
     fig.update_geos(fitbounds="locations", visible=False)
-    fig.update_layout(
+    fig.update_layout(hoverlabel=dict(bgcolor="white"),
         title_text = "<br>COVID-19 - Evolution sur les 15 derniers jours "+lib_zone+"<br>- "+Donnée + " -<br></b>",
         title_x = 0.5, title_font_size=20, title_font_color='rgb(217,95,2)',
                           legend=dict(font=dict(size=15)),
@@ -589,6 +599,7 @@ def plot_carte_ratio(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_par
                         color=colonne,
                         animation_frame="jour",
                         hover_name="infos",
+                        hover_data={'code_departement':False},
                         color_continuous_scale=px.colors.sequential.RdBu_r,
                         range_color=[min, max],
                         labels={'hosp':'Nb personnes', 'rea':'Nb personnes', 'rad':'Nb personnes',
@@ -596,7 +607,7 @@ def plot_carte_ratio(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_par
                        )
 
     fig.update_geos(fitbounds="locations", visible=False)
-    fig.update_layout(
+    fig.update_layout(hoverlabel=dict(bgcolor="white"),
         title_text = "<br>COVID-19 - Evolution sur les 15 derniers jours "+lib_zone+"<br>- "+Donnée+' : ratio pour '+lib_ratio+' habitants -</br></b> ',
         title_x = 0.5, title_font_size=20, title_font_color='rgb(217,95,2)',
                           legend=dict(font=dict(size=15)),
@@ -888,3 +899,67 @@ def plot_age_1region(df_type_data, Donnée, df_plot, reg, dict_labels, local, sh
         fig.write_html(local+'/Output/Evol_age_'+colonne+'_'+reg+'.html', auto_open=False)
 
     return fig, colonne
+
+
+
+def plot_vaccin(df, geo, local, show='O'):
+
+    list_om = ['971', '972', '973', '974', '976']
+    annot = ""
+    for d in list_om:
+        dep = df[df.code_departement == d]['nom_departement'].reset_index(drop=True)[0]
+        taux = df[df.code_departement == d]['couv_tot_complet'].reset_index(drop=True)[0]
+        if (d == '973') or (d == '976'):
+            annot += dep + "\t\t: " + str(taux) + "<br>"
+        elif d == '971':
+            annot += dep + "\t: " + str(taux) + "<br>"
+        else:
+            annot += dep + "\t: " + str(taux) + "<br>"
+
+    min = 40 #df[~df.code_departement.isin(list_om)]['couv_tot_complet'].min()
+    max = 100 #df[~df.code_departement.isin(list_om)]['couv_tot_complet'].max()
+
+    fig = px.choropleth(df[~df.code_departement.isin(list_om)],
+                        geojson=geo,
+                        locations="code_departement", 
+                        featureidkey="properties.code",
+                        color='couv_tot_complet',
+                        #animation_frame="jour",
+                        hover_name="infos",
+                        color_continuous_scale=px.colors.sequential.Greens,
+                        range_color=[min, max],
+                        labels={'couv_tot_complet':'Taux de population couverte'},
+                        hover_data={'code_departement':False} 
+                    )
+
+    fig.update_geos(fitbounds="locations", visible=False)
+
+    fig.add_annotation(text=annot, font_size=12, align='left',
+                    xref="paper", yref="paper",
+                    x=0, y=0.05, showarrow=False)
+
+    fig.update_layout(hoverlabel=dict(bgcolor="white"),
+        title_text = "<br>Taux de couverture par département</br>",
+        title_x = 0.5, title_font_size=20, title_font_color='rgb(217,95,2)',
+                        showlegend=False,
+        geo=dict(
+            showframe = False,
+            showcoastlines = False,
+            projection_type = 'mercator'),
+        width=600,
+        height=400,
+        margin=dict(
+            l= 0,
+            r= 0,
+            b= 0,
+            #t= 0,
+            pad= 4)
+    )
+
+    if show == 'O':
+        fig.show()
+    
+    if local != ".":
+        fig.write_html(local+'/Output/Vaccin_dept.html', auto_open=False)
+
+    return fig

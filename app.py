@@ -21,6 +21,14 @@ def get_data_indic():
     j, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc = ut.charge_data_indic()
     return j, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc
 
+def get_vaccin(df_dept):
+    df = ut.charge_data_vaccin()
+    taux_glob = np.round(df['n_tot_complet'].sum() * 100 / df['pop'].sum(), 2)
+    df = pd.merge(df, df_dept, on='code_departement')
+    df['infos'] = df['code_departement'] + " - " + df['nom_departement']
+
+    return taux_glob, df
+
 #############################################################################################################
 
 st.set_page_config(page_title="Covid19", page_icon=None, layout='wide', initial_sidebar_state='auto')
@@ -80,17 +88,59 @@ fig.add_trace(go.Indicator(
     title={'text': 'Personnes décédées'},
     delta = {'reference': tot_dc_j_1},
     domain = {'row': 0, 'column': 2}))
-    
+
+  
 fig.update_layout(width=1000, height=170, margin={'l':0},
     grid = {'rows': 1, 'columns': 3, 'pattern': "independent"})
 
 fig.update_traces(delta_decreasing_color='green', delta_increasing_color='red',
                  number_valueformat=",.", delta_valueformat=",.",
-                 title_font_size=20, delta_font_size=25, number_font_size=35)
-
+                 title_font_size=18, delta_font_size=23, number_font_size=30)
 
 
 st.plotly_chart(fig)
+
+taux_glob, df_vaccin = get_vaccin(df_dept)
+
+
+#---------------------------------------------------------------------------------------------------------------
+
+title_vaccin = """
+                <style>
+                    .title h2{
+                    user-select: none;
+                    font-size: 25px;
+                    color:rgb(228,26,28);
+                    }
+                </style>
+                <div class="title">
+                    <h2><b>Taux de couverture vaccinale complète</b></h2>
+                </div>
+                """
+st.markdown(title_vaccin, unsafe_allow_html=True)
+
+#---------------------------------------------------------------------------------------------------------------
+
+with st.expander("Couverture vaccinale complète"):
+    col1, col2 = st.columns((1, 2))
+    with col1:
+        fig = go.Figure()
+
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = taux_glob,
+            title = {'text': "Taux national"},
+            domain = {'x': [0, 1], 'y': [0, 1]}
+        ))
+        fig.update_layout(width=450, height=400, 
+        margin={'l':0})
+
+        fig.update_traces(title_font_size=20,  number_font_size=30)
+        st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        fig = ut.plot_vaccin(df_vaccin, geo, local, 'N')
+        st.plotly_chart(fig, use_container_width=True)
+
 
 #---------------------------------------------------------------------------------------------------------------
 
