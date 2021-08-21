@@ -121,7 +121,7 @@ st.markdown(title_vaccin, unsafe_allow_html=True)
 
 #---------------------------------------------------------------------------------------------------------------
 
-with st.expander("Couverture vaccinale complète"):
+with st.expander("Couverture vaccinale complète", expanded=True):
     col1, col2 = st.columns((1, 2))
     with col1:
         fig = go.Figure()
