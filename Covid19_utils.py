@@ -527,8 +527,7 @@ def plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, ge
                                                 'hosp_ratio','rea_ratio','dc_ratio', \
                                                 'date','code_departement','infos']]
     min = df_plot[colonne].min()
-    max = df_plot[colonne].max()
-    st.write(df_plot.head())
+    max = df_plot[colonne].max() 
     fig = px.choropleth(df_plot,
                             geojson=geo,
                             locations="code_departement", 
