@@ -474,7 +474,10 @@ with st.expander("Vue géographique de l'évolution"):
             submitted1 = st.form_submit_button('Rafraîchir')
             if submitted1:
                 if Type == 'En nombre':
-                    fig, colonne = ut.plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, geo, local, 'N')
+                    try:
+                        fig, colonne = ut.plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, geo, local, 'N')
+                    except Exception as e: 
+                        st.write(e)
                 else:
                     fig, colonne = ut.plot_carte_ratio(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, geo, local, ratio, 'N')
                 st.plotly_chart(fig, use_container_width=True)
