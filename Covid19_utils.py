@@ -543,7 +543,7 @@ def plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, ge
                             labels={'hosp':'Nb personnes', 'rea':'Nb personnes', 'rad':'Nb personnes', 'dc':'Nb personnes'}
                         )
     except Exception as e: 
-        print(e)
+        st.write(e)
 
 
     fig.update_geos(fitbounds="locations", visible=False)
