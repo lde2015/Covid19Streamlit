@@ -539,7 +539,7 @@ def plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, ge
                         hover_data={'code_departement':False},
                         color_continuous_scale=px.colors.sequential.RdBu_r,
                         range_color=[min, max],
-                        labels={'hosp':'Nb personnes', 'rea':'Nb personnes', 'rad':'Nb personnes',
+                        labels={'hosp':'Nb personnes', 'rea':'Nb personnes', 'rad':'Nb personnes', \
                                 'dc':'Nb personnes'}
                        )
 
