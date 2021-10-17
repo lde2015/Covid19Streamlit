@@ -119,7 +119,7 @@ def charge_data(date_deb, df_dept, df_pop_dept, df_type_data, ratio=10000):
     df = pd.read_csv(io.StringIO(content.decode('utf-8')), sep=';')
     df = df[df.sexe == 0] # On ne considère que le niveau global
 
-    df.dropna(inplace=True)
+    df.fillna(0, inplace=True)
     #df['test'] = df['jour'].apply(lambda x: np.where(x[:4] == '2020', True, False))
     #df1 = df[df.test]
     #df2 = df[~df.test]
@@ -128,6 +128,7 @@ def charge_data(date_deb, df_dept, df_pop_dept, df_type_data, ratio=10000):
     #df = pd.concat([df1, df2]).sort_index()
 
     df['date'] = pd.to_datetime(df['jour'], format='%Y-%m-%d')
+
     df = df[df.date >= dte_deb]
 
     # Incorporation des infos départements au dataframe de données
@@ -527,19 +528,21 @@ def plot_carte(df_type_data, dte_deb, Donnée, Zone, df_hors_paris, df_paris, ge
                                                 'hosp_ratio','rea_ratio','dc_ratio', \
                                                 'date','code_departement','infos']]
     min = df_plot[colonne].min()
-    max = df_plot[colonne].max() 
+    max = df_plot[colonne].max()
+
     fig = px.choropleth(df_plot,
-                            geojson=geo,
-                            locations="code_departement", 
-                            featureidkey="properties.code",
-                            color=colonne,
-                            animation_frame="jour",
-                            hover_name="infos",
-                            hover_data={'code_departement':False},
-                            color_continuous_scale=px.colors.sequential.RdBu_r,
-                            range_color=[min, max],
-                            labels={'hosp':'Nb personnes', 'rea':'Nb personnes', 'rad':'Nb personnes', 'dc':'Nb personnes'}
-                        )
+                        geojson=geo,
+                        locations="code_departement", 
+                        featureidkey="properties.code",
+                        color=colonne,
+                        animation_frame="jour",
+                        hover_name="infos",
+                        hover_data={'code_departement':False},
+                        color_continuous_scale=px.colors.sequential.RdBu_r,
+                        range_color=[min, max],
+                        labels={'hosp':'Nb personnes', 'rea':'Nb personnes', 'rad':'Nb personnes',
+                                'dc':'Nb personnes'}
+                       )
 
     fig.update_geos(fitbounds="locations", visible=False)
     fig.update_layout(hoverlabel=dict(bgcolor="white"),
