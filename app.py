@@ -5,17 +5,32 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from streamlit_lottie import st_lottie
+import requests
 
-@st.cache(show_spinner=False)
+@st.experimental_memo(show_spinner=False)
 def get_metadata(local, nb_jours):
     df_type_data, df_new, df_new_agg_reg, dict_labels, geo, df_dept, df_pop_dept = ut.charge_meta(local, nb_jours)
     return df_type_data, df_new, df_new_agg_reg, dict_labels, geo, df_dept, df_pop_dept
 
-@st.cache(show_spinner=False)
+@st.experimental_memo(show_spinner=False)
 def get_data(dte_deb, df_dept, df_pop_dept, df_type_data):
     date_deb = dte_deb.strftime('%d/%m/%Y')
     df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat = ut.charge_data(date_deb, df_dept, df_pop_dept, df_type_data)
     return df_agg_reg, df, df_hors_paris, df_paris, df_age, df_age_nat
+
+@st.experimental_singleton (show_spinner=False)
+def get_lottie(lottie_url):
+    # Embed lottie file
+    def load_lottieurl(url: str):
+        r = requests.get(url)
+        if r.status_code != 200:
+            return None
+        return r.json()
+
+    lottie_json = load_lottieurl(lottie_url)
+
+    return lottie_json
 
 def get_data_indic():
     j, tot_hosp_j, tot_rea_j, tot_dc_j, tot_hosp_j_1, tot_rea_j_1, tot_dc_j_1, evol_hosp, evol_rea, evol_dc = ut.charge_data_indic()
@@ -33,9 +48,11 @@ def get_vaccin(df_dept):
 
 st.set_page_config(page_title="Covid19", page_icon=None, layout='wide', initial_sidebar_state='auto')
 
+lottie_json = get_lottie( "https://assets6.lottiefiles.com/packages/lf20_0djafiny.json")
+
 col1, col2 = st.columns([1,4])
 with col1:
-    st.image('sars-cov-19.jpg')
+    st_lottie(lottie_json, height=150)
 with col2:
     st.markdown("<h1 style='text-align: center; color: rgb(93,105,177);'>Dashboard Evolution Covid19 en France</h1><br> </br>", unsafe_allow_html=True)
 
