@@ -908,6 +908,7 @@ def plot_vaccin(df, geo, local, show='O'):
     list_om = ['971', '972', '973', '974', '976']
     annot = ""
     for d in list_om:
+        print(d)
         try:
             dep = df[df.code_departement == d]['nom_departement'].reset_index(drop=True)[0]
             taux = df[df.code_departement == d]['couv_tot_complet'].reset_index(drop=True)[0]
