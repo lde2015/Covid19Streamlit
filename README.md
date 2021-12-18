@@ -1,6 +1,6 @@
 # Streamlit App for for monitoring the evolution of Covid-19 in France
 
-![](Capture1.PNG)
+![](Picture/Capture1.PNG)
 
 This interactive dashboard offers different views of the evolution of the Covid-19 epidemic in France:
 
@@ -10,8 +10,8 @@ This interactive dashboard offers different views of the evolution of the Covid-
 * evolution by age group
 * evolution of new cases over the last 15 days.
 
-![](Capture2.PNG)
-![](Capture3.PNG)
-![](Capture4.PNG)
+![](Picture/Capture2.PNG)
+![](Picture/Capture3.PNG)
+![](Picture/Capture4.PNG)
 
 This app is developed and deployed with [Streamlit](https://streamlit.io/).
