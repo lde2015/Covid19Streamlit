@@ -333,8 +333,8 @@ def plot_courbes_regions(df_type_data, Donnée, df_agg_reg, dict_labels, local, 
                   hover_name="nom_region", width=1200, height=600,
                   title='<b>COVID-19 - Evolution par région - '+Donnée+'</b>',
                   category_orders=({'nom_region': list(np.sort(df_agg_reg['nom_region'].unique()))}))
-    fig.update_layout(title_x = 0.5, legend_orientation='h',
-    title_font_size=20, title_font_color='rgb(217,95,2)',
+    fig.update_layout(title_x = 0.5, legend_orientation='h', 
+                          title_font_size=20, title_font_color='rgb(217,95,2)',
                           legend=dict(font=dict(size=15)),)
     fig.update_yaxes(title_text='')
     fig.update_xaxes(title_text='')
@@ -908,16 +908,19 @@ def plot_vaccin(df, geo, local, show='O'):
     list_om = ['971', '972', '973', '974', '976']
     annot = ""
     for d in list_om:
-        dep = df[df.code_departement == d]['nom_departement'].reset_index(drop=True)[0]
-        taux = df[df.code_departement == d]['couv_tot_complet'].reset_index(drop=True)[0]
-        if (d == '973') or (d == '976'):
-            annot += dep + "\t\t: " + str(taux) + "<br>"
-        elif d == '971':
-            annot += dep + "\t: " + str(taux) + "<br>"
-        else:
-            annot += dep + "\t: " + str(taux) + "<br>"
+        try:
+            dep = df[df.code_departement == d]['nom_departement'].reset_index(drop=True)[0]
+            taux = df[df.code_departement == d]['couv_tot_complet'].reset_index(drop=True)[0]
+            if (d == '973') or (d == '976'):
+                annot += dep + "\t\t: " + str(taux) + "<br>"
+            elif d == '971':
+                annot += dep + "\t: " + str(taux) + "<br>"
+            else:
+                annot += dep + "\t: " + str(taux) + "<br>"
+        except:
+            pass
 
-    min = 40 #df[~df.code_departement.isin(list_om)]['couv_tot_complet'].min()
+    min = 50 #df[~df.code_departement.isin(list_om)]['couv_tot_complet'].min()
     max = 100 #df[~df.code_departement.isin(list_om)]['couv_tot_complet'].max()
 
     fig = px.choropleth(df[~df.code_departement.isin(list_om)],
